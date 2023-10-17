@@ -13,7 +13,7 @@ box_size_X = DEM_HEIGHT_IN_m
 box_size_Z = DEM_WIDTH_IN_m 
 
 # ========== CHECK THIS VARIABLE ===========
-grid_size = 1
+grid_size = 10
 # ==========================================
 
 grid_resolution_X = int(box_size_X/grid_size)
@@ -22,4 +22,4 @@ grid_shape = (grid_resolution_X, grid_resolution_Z)
 
 print(f"grid shape: {grid_shape}", end="\n\n")
 
-depth.save_to_npy(grid_size, grid_shape)
+depth.save_to_npy(grid_size, grid_shape, plot=True)
