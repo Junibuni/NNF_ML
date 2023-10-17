@@ -1,0 +1,6 @@
+DEM_HEIGHT_IN_m = 4610
+DEM_WIDTH_IN_m = 4750
+BASE_GRID_SIZE_IN_m = 10 
+
+xmin, ymin, xmax, ymax = 127.959666, 37.073320, 128.019327, 37.115297
+CHEON_MT_COORDINATE = (xmin, ymin, xmax, ymax)

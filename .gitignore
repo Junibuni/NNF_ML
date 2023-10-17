@@ -1,2 +1,4 @@
 venv
 processing/data
+*.pyc
+__pycache__/
