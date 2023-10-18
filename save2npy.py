@@ -5,6 +5,16 @@ USAGE:
     set grid size in m
 
     run depth.save_to_numpy()
+
+    **Plot kwargs list
+        Available kwargs:
+        color_bar (bool): show colorbar
+        color_range (tuple): range for colormap
+        cmap (matplotlib.cmap): cmap for plot
+        save_path (str): save path + file name
+        fig_size (tuple): figsize
+        show_axis (bool): show axis
+    **
 """
 from processing import depth
 from processing.utils.vars import *

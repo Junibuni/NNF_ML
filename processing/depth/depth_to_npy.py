@@ -103,13 +103,72 @@ def get_height(filename, grid_size, grid_shape):
 
     return surface_particle
 
+def _plot(data, **kwargs):
+    """
+    Available kwargs:
+        color_bar (bool): show colorbar
+        color_range (tuple): range for colormap
+        cmap (matplotlib.cmap): cmap for plot
+        save_path (str): save path + file name
+        fig_size (tuple): figsize
+        show_axis (bool): show axis
+    """
+    color_bar = False
+    color_range = None
+    cmap = cm.coolwarm
+    save_path = None
+    fig_size = None
+    show_axis = False
+
+    if kwargs is not None:
+        for k, v in kwargs.items():
+            match k:
+                case "color_bar":
+                    color_bar = v
+                case "color_range":
+                    color_range = v
+                case "cmap":
+                    cmap = v
+                case "save_path":
+                    save_path = v
+                case "fig_size":
+                    fig_size = v
+                case "show_axis":
+                    show_axis = v
+                case _:
+                    print(f"{k} valueError")
+    
+    plt.figure(figsize=fig_size)
+    plt.imshow(data, cmap=cmap)
+
+    if color_bar:
+        plt.colorbar()
+    if color_range is not None:
+        plt.clim(*color_range)
+
+    plt.axis(show_axis)
+
+    if save_path is not None:
+        plt.savefig(save_path, bbox_inches='tight')
+        print(f"saved as {save_path}")
+
+    plt.show()
+
 """
 file name format:
 강우량_site.csv
 
 ex) 100_12.csv
 """
-def save_to_npy(grid_size, grid_shape, plot=False):
+def save_to_npy(grid_size, grid_shape, plot=False, **kwargs):
+    """
+    merge files with same rain rate, convert to npy file
+    in:
+        grid_size (int): desired grid size
+        grid_shape (tuple): grid shape
+        plot (bool): plot for each rain rate
+        **kwargs: inputs for plot
+    """
     file_lists = glob.glob(DEPTH_DATA_PATH + '\*.csv')
     rainrate_lists = {}
     for file_path in file_lists:
@@ -135,9 +194,4 @@ def save_to_npy(grid_size, grid_shape, plot=False):
         print()
         
         if plot:
-            cmap = cm.coolwarm
-            plt.imshow(surface_particle, cmap=cmap)
-            #plt.colorbar()
-            plt.axis(False)
-            #plt.savefig('./full_size_plot.png', bbox_inches='tight')
-            plt.show()
+            _plot(surface_particle, **kwargs)
