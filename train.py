@@ -26,9 +26,12 @@ X_train, y_train = create_dataset(X, y)
 model = LR()
 model.train(X_train, y_train)
 
-ans = model.predict(13)
-print(ans)
+ans = model.predict(-10)
+
 import matplotlib.pyplot as plt
 plt.imshow(ans, cmap="coolwarm")
 plt.colorbar()
 plt.show()
+
+print("훈련세트 점수: {:.2f}".format( model.score(X_train, y_train) ))
+#print("테스트세트 점수: {:.2f}".format( model.score(X_test, y_test) ))

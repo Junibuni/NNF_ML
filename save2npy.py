@@ -33,4 +33,15 @@ grid_shape = (grid_resolution_X, grid_resolution_Z)
 print(f"grid shape: {grid_shape}", end="\n\n")
 
 
-depth.save_to_npy(grid_size, grid_shape, plot=True, save_path=r"processing\data\imgs")
+depth.save_to_npy(grid_size, grid_shape, plot=False, save_path=r"processing\data\imgs")
+
+import numpy as np
+import os
+cwd = os.getcwd()
+NUMPY_RESULT_PATH = os.path.join(cwd, r"processing\data\numpy_data")
+spl = [0, 50, 100]
+for s in spl:
+    sp = os.path.join(NUMPY_RESULT_PATH, str(s))
+    id_matrix = np.array([[ 0.0 for i in range(grid_shape[1])] for j in range(grid_shape[0])])
+    np.save(sp, id_matrix, True)
+    print(f"saved as {sp}")

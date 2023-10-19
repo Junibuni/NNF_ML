@@ -30,3 +30,6 @@ class LR:
 
         y_pred_mod = np.array([max(0, x) for x in y_pred[0]])
         return _revert_flatten(y_pred_mod)
+    
+    def score(self, x, y):
+        return self.model.score(x, y)
