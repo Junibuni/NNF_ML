@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import dask.dataframe as dd
 
 from pathlib import Path
-from time import time
+from time import time, sleep
 from matplotlib import cm
 from tqdm import tqdm
 
@@ -103,13 +103,13 @@ def get_height(filename, grid_size, grid_shape):
 
     return surface_particle
 
-def _plot(data, **kwargs):
+def _plot(data, rain_rate, **kwargs):
     """
     Available kwargs:
         color_bar (bool): show colorbar
         color_range (tuple): range for colormap
         cmap (matplotlib.cmap): cmap for plot
-        save_path (str): save path + file name
+        save_path (str): save path folder name. The file name will be automatically generated based on rain rate
         fig_size (tuple): figsize
         show_axis (bool): show axis
     """
@@ -130,7 +130,8 @@ def _plot(data, **kwargs):
                 case "cmap":
                     cmap = v
                 case "save_path":
-                    save_path = v
+                    filename = f"{rain_rate}.png"
+                    save_path = os.path.join(cwd, v, filename)
                 case "fig_size":
                     fig_size = v
                 case "show_axis":
@@ -151,8 +152,11 @@ def _plot(data, **kwargs):
     if save_path is not None:
         plt.savefig(save_path, bbox_inches='tight')
         print(f"saved as {save_path}")
+        print()
 
     plt.show()
+    sleep(5)
+    plt.close()
 
 """
 file name format:
@@ -194,4 +198,4 @@ def save_to_npy(grid_size, grid_shape, plot=False, **kwargs):
         print()
         
         if plot:
-            _plot(surface_particle, **kwargs)
+            _plot(surface_particle, rain_rate=k, **kwargs)

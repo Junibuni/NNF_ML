@@ -32,4 +32,5 @@ grid_shape = (grid_resolution_X, grid_resolution_Z)
 
 print(f"grid shape: {grid_shape}", end="\n\n")
 
-depth.save_to_npy(grid_size, grid_shape, plot=True)
+
+depth.save_to_npy(grid_size, grid_shape, plot=True, save_path=r"processing\data\imgs")
