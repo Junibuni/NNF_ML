@@ -164,7 +164,7 @@ file name format:
 
 ex) 100_12.csv
 """
-def save_to_npy(grid_size, grid_shape, plot=False, **kwargs):
+def save_to_npy(grid_size, grid_shape, plot=False, num_site=2, **kwargs):
     """
     merge files with same rain rate, convert to npy file
     in:
@@ -187,6 +187,9 @@ def save_to_npy(grid_size, grid_shape, plot=False, **kwargs):
     print()
 
     for k in rainrate_lists.keys():
+        if len(rainrate_lists[k]) != num_site:
+            print(f"skipping{k}mm due number of files for {k}mm less than {num_site}")
+            continue
         surface_particle = np.zeros(grid_shape)
         save_file_name = os.path.join(NUMPY_RESULT_PATH, k)
         print(f"Processing {k}mm")

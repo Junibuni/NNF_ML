@@ -18,27 +18,32 @@ def _bfs_search(arr, start_row, start_col):
 
     return cluster
 
-def remove_small_clusters(arr, threshold=150):
-    copied_arr = arr.copy()
+def remove_small_clusters(arr, threshold=150, label_true=None, label_false=None):
     clusters = []
     not_clusetered = []
-
-    for row in range(copied_arr.shape[0]):
-        for col in range(copied_arr.shape[1]):
-            if copied_arr[row, col] != 0.0:
-                cluster = _bfs_search(copied_arr, row, col)
+    arr_copy = arr.copy()
+    for row in range(arr_copy.shape[0]):
+        for col in range(arr_copy.shape[1]):
+            if arr_copy[row, col] != 0.0:
+                cluster = _bfs_search(arr_copy, row, col)
                 if len(cluster) >= threshold:
                     clusters.append(cluster)
                 else:
                     not_clusetered.append(cluster)
-    
-    new_arr = np.zeros(arr.shape)
-    for cluster in clusters:
-        for r, c in cluster:
-            new_arr[r, c] = 1.0
-    
+
+
+    new_arr = arr.copy()
+    if label_true:
+        for cluster in clusters:
+            for r, c in cluster:
+                new_arr[r, c] = label_true
+
+
     for cluster in not_clusetered:
-        for r, c, in cluster:
-            new_arr[r, c] = -2.0
+        for r, c in cluster:
+            if label_false:
+                new_arr[r, c] = label_false
+            else:
+                new_arr[r, c] = 0.0
     
     return new_arr

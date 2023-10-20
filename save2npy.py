@@ -39,7 +39,7 @@ import numpy as np
 import os
 cwd = os.getcwd()
 NUMPY_RESULT_PATH = os.path.join(cwd, r"processing\data\numpy_data")
-spl = [0, 50, 100]
+spl = [0, 20, 25, 30, 40, 50, 53, 60, 70, 80, 90, 100]
 for s in spl:
     sp = os.path.join(NUMPY_RESULT_PATH, str(s))
     id_matrix = np.array([[ 0.0 for i in range(grid_shape[1])] for j in range(grid_shape[0])])

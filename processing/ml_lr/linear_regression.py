@@ -3,10 +3,10 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 def _flatten(arr):
-    return arr.ravel()
+    return np.array(arr.ravel())
 
 def _revert_flatten(arr, figsize=(461,475)):
-    return arr.reshape(figsize)
+    return np.array(arr.reshape(figsize))
 
 def create_dataset(X, y):
     X_train = np.array(X) #list shape (Xtrain, 1)
@@ -25,6 +25,7 @@ class LR:
         self.model.fit(X, y)
     
     def predict(self, X):
+        assert X > 0, "rain rate must be greater than 0"
         X_test = np.array([[X]])
         y_pred = self.model.predict(X_test)
 
