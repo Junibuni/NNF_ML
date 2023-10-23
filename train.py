@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 
 from tqdm import tqdm
-from processing.ml_lr.linear_regression import create_dataset, LR
+from processing.ml_lr.linear_regression import create_dataset, LinearRegressionModel
 from processing.utils.bfs import remove_small_clusters
 
 cwd = os.getcwd()
@@ -26,7 +26,7 @@ for f in tqdm(file_list):
 
 X_train, y_train = create_dataset(X, y)
 
-model = LR()
+model = LinearRegressionModel()
 model.train(X_train, y_train)
 print("훈련세트 점수: {:.2f}".format( model.score(X_train, y_train) ))
 

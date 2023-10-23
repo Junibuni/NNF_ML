@@ -9,14 +9,13 @@ model_path = os.path.join(cwd, "processing\data\model.pkl")
 
 model = pickle.load(open(model_path, "rb"))
 
-ans = model.predict(370)
+ans = model.predict(149.999999)
 ans = remove_small_clusters(ans)
 
 plt.imshow(ans, cmap="coolwarm", vmin=0)
 plt.colorbar()
 plt.text(10, -10, f'{10}mm', color='black', fontsize=12, fontweight='bold')
 plt.show()
-
 
 import cv2
 import numpy as np

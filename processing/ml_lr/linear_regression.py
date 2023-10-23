@@ -68,6 +68,9 @@ class LinearRegressionModel:
             np.array: Predicted target values.
         """
         assert X > 0, "Rain rate must be greater than 0"
+        if X < 150:
+            return np.zeros((461, 475))
+
         X_test = np.array([[X]])
         y_pred = self.model.predict(X_test)
 
