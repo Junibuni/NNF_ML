@@ -1,101 +1,78 @@
-"""
-convert particle depth information to npy format
-"""
-
-import glob
 import os
-import math
-import pprint
 import numpy as np
 import matplotlib.pyplot as plt
 import dask.dataframe as dd
-
-from pathlib import Path
-from time import time, sleep
-from matplotlib import cm
+import math
+import pprint
+import glob
 from tqdm import tqdm
 
+# Define constants
 cwd = os.getcwd()
-DEPTH_DATA_PATH = os.path.join(cwd, r"processing\data\depth_data")
-NUMPY_RESULT_PATH = os.path.join(cwd, r"processing\data\numpy_data")
+DEPTH_DATA_PATH = os.path.join(cwd, "processing/data/depth_data")
+NUMPY_RESULT_PATH = os.path.join(cwd, "processing/data/numpy_data")
 
+# Define Grid class
 class Grid:
     def __init__(self, grid_size):
         self.grid_size = grid_size
-    def bounding_cell(self, x, z) -> tuple((int, int)):
-        # x-coord = matrix columns
-        # z-coord = matrix rows
 
-        return (int(z/self.grid_size), int(x/self.grid_size))
-    
+    def bounding_cell(self, x, z):
+        # Calculate the grid cell based on coordinates
+        return int(z / self.grid_size), int(x / self.grid_size)
+
+# Define Particle class
 class Particle:
     def __init__(self, particle_info, xmin, xmax, zmin, zmax):
-        _pos_x, _pos_y, _pos_z, _depth = particle_info
-        if str(_depth) == 'nan':
-            _depth = 0.0
-        self.pos_x = _pos_x
-        self.pos_y = _pos_y
-        self.pos_z = _pos_z
-        if xmin < 0.0:
-            self.pos_x = _pos_x - xmin
-        if zmin < 0.0:
-            self.pos_z = _pos_z - zmin
-        self.depth = _depth
+        pos_x, pos_y, pos_z, depth = particle_info
+        if math.isnan(depth):
+            depth = 0.0
+        self.pos_x = pos_x - xmin if xmin < 0.0 else pos_x
+        self.pos_y = pos_y
+        self.pos_z = pos_z - zmin if zmin < 0.0 else pos_z
+        self.depth = depth
 
     def __lt__(self, other):
         return self.depth < other.depth
-    
+
     def __gt__(self, other):
         return self.depth > other.depth
 
     def __eq__(self, other):
         return self.depth == other.depth
-    
+
     @property
     def height(self):
         return self.depth
-    
+
     def get_position(self):
         return self.pos_x, self.pos_z
-    
-def get_height(filename, grid_size, grid_shape):
-    """
-    in:
-        filename (str): csv filename with particle depth information
-        grid_size (int): grid size in m
-        grid_shape (tuple): 2d array shape
 
-    """
-    print(f"Processing: {filename}")
+# Define a function to get height data
+def get_height(filename, grid_size, grid_shape):
+    print('\033[37m' + f"Processing: {filename}")
     grid = Grid(grid_size)
-    id_matrix = [[ [] for i in range(grid_shape[1])] for j in range(grid_shape[0])]
+    id_matrix = [[[] for _ in range(grid_shape[1])] for _ in range(grid_shape[0])]
     height = []
-    start = time()
+
     # Read CSV file into a Dask DataFrame
     df = dd.read_csv(filename, sep=",", skiprows=5, usecols=[1, 2, 3, 4], encoding='latin-1')
     particles = df.compute().to_numpy()
-    xmin, xmax = min(particles[:,0]), max(particles[:,0])
-    zmin, zmax = min(particles[:,2]), max(particles[:,2])
-    particles = list(map(lambda x:Particle(x, xmin, xmax, zmin, zmax), particles))
-    num_particles = len(particles)
+    xmin, xmax = min(particles[:, 0]), max(particles[:, 0])
+    zmin, zmax = min(particles[:, 2]), max(particles[:, 2])
+    particles = [Particle(particle, xmin, xmax, zmin, zmax) for particle in particles]
 
-    for particle in tqdm(particles, desc="processing particles", ascii=" *"):
+    for particle in tqdm(particles, desc="Processing particles"):
         x, z = particle.get_position()
         row, col = grid.bounding_cell(x, z)
-        id_matrix[row][col].append(particle)     
-    
-    for i,row in enumerate(tqdm(id_matrix, desc="row", ascii=" -", position=0, leave=False)):
-        for j,col in enumerate(tqdm(row, desc="column", ascii=" -", position=1, leave=False)):
-            maximum = max(id_matrix[i][j]).height if id_matrix[i][j] else 0.0
+        id_matrix[row][col].append(particle)
+
+    for i, row in enumerate(tqdm(id_matrix, desc="Row", position=0, leave=False)):
+        for j, col in enumerate(tqdm(row, desc="Column", position=1, leave=False)):
+            maximum = max(id_matrix[i][j], key=lambda p: p.height).height if id_matrix[i][j] else 0.0
             height.append(maximum)
 
     surface_particle = np.array(height).reshape(*grid_shape)
-    elp_time = time() - start
-    
-    print(f"number of particles: {num_particles}")
-    print(f"number of grids: {grid_shape[0]*grid_shape[1]}")
-    print(f"elapsed time: {elp_time:.2f} sec")
-    print()
 
     del id_matrix
     del grid
@@ -103,42 +80,15 @@ def get_height(filename, grid_size, grid_shape):
 
     return surface_particle
 
-def _plot(data, rain_rate, **kwargs):
-    """
-    Available kwargs:
-        color_bar (bool): show colorbar
-        color_range (tuple): range for colormap
-        cmap (matplotlib.cmap): cmap for plot
-        save_path (str): save path folder name. The file name will be automatically generated based on rain rate
-        fig_size (tuple): figsize
-        show_axis (bool): show axis
-    """
-    color_bar = False
-    color_range = None
-    cmap = cm.coolwarm
-    save_path = None
-    fig_size = None
-    show_axis = False
+# Define a function to plot data
+def plot_data(data, rain_rate, **kwargs):
+    color_bar = kwargs.get("color_bar", False)
+    color_range = kwargs.get("color_range", None)
+    cmap = kwargs.get("cmap", plt.cm.coolwarm)
+    save_path = kwargs.get("save_path", None)
+    fig_size = kwargs.get("fig_size", None)
+    show_axis = kwargs.get("show_axis", False)
 
-    if kwargs is not None:
-        for k, v in kwargs.items():
-            match k:
-                case "color_bar":
-                    color_bar = v
-                case "color_range":
-                    color_range = v
-                case "cmap":
-                    cmap = v
-                case "save_path":
-                    filename = f"{rain_rate}.png"
-                    save_path = os.path.join(cwd, v, filename)
-                case "fig_size":
-                    fig_size = v
-                case "show_axis":
-                    show_axis = v
-                case _:
-                    print(f"{k} valueError")
-    
     plt.figure(figsize=fig_size)
     plt.imshow(data, cmap=cmap)
 
@@ -147,58 +97,50 @@ def _plot(data, rain_rate, **kwargs):
     if color_range is not None:
         plt.clim(*color_range)
 
-    plt.axis(show_axis)
+    plt.axis('on' if show_axis else 'off')
 
     if save_path is not None:
         plt.savefig(save_path, bbox_inches='tight')
-        print(f"saved as {save_path}")
-        print()
+        print(f"Saved as {save_path}")
 
     plt.show()
-    sleep(5)
     plt.close()
 
-"""
-file name format:
-강우량_site.csv
-
-ex) 100_12.csv
-"""
+# Define a function to save data to npy files
 def save_to_npy(grid_size, grid_shape, plot=False, num_site=2, **kwargs):
-    """
-    merge files with same rain rate, convert to npy file
-    in:
-        grid_size (int): desired grid size
-        grid_shape (tuple): grid shape
-        plot (bool): plot for each rain rate
-        **kwargs: inputs for plot
-    """
-    file_lists = glob.glob(DEPTH_DATA_PATH + '\*.csv')
+    file_lists = glob.glob(os.path.join(DEPTH_DATA_PATH, '*.csv'))
     rainrate_lists = {}
+    
     for file_path in file_lists:
         filename = os.path.splitext(os.path.basename(file_path))[0]
         rain_rate = filename.split("_")[0]
-        if rain_rate not in rainrate_lists:
-            rainrate_lists[rain_rate] = []
-        rainrate_lists[rain_rate].append(file_path)
-    print("============================================list of files============================================")
-    pprint.PrettyPrinter(indent=4).pprint(rainrate_lists)
-    print("=====================================================================================================")
-    print()
+        rainrate_lists.setdefault(rain_rate, []).append(file_path)
 
-    for k in rainrate_lists.keys():
-        if len(rainrate_lists[k]) != num_site:
-            print(f"skipping{k}mm due number of files for {k}mm less than {num_site}")
+    print("============================================ List of Files ============================================")
+    pprint.pprint(rainrate_lists)
+    print("=======================================================================================================")
+
+    for k, file_paths in rainrate_lists.items():
+        if len(file_paths) != num_site:
+            print(f"Skipping {k}mm due to the number of files for {k}mm less than {num_site}")
             continue
+
         surface_particle = np.zeros(grid_shape)
         save_file_name = os.path.join(NUMPY_RESULT_PATH, k)
-        print(f"Processing {k}mm")
-        for path in rainrate_lists[k]:
+        print('\033[34m' + f"Processing {k}mm")
+
+        for path in file_paths:
             sf = get_height(path, grid_size, grid_shape)
             surface_particle += sf
-        np.save(save_file_name, surface_particle, True)        
-        print(f"saved {save_file_name}.npy")
-        print()
-        
+
+        np.save(save_file_name, surface_particle, allow_pickle=True)
+        print(f"Saved {save_file_name}.npy", end="\n\n")
+
         if plot:
-            _plot(surface_particle, rain_rate=k, **kwargs)
+            plot_data(surface_particle, rain_rate=k, **kwargs)
+
+# Example usage
+if __name__ == "__main__":
+    grid_size = 10
+    grid_shape = (461, 475)
+    save_to_npy(grid_size, grid_shape, plot=True)
