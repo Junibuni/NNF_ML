@@ -1,43 +1,38 @@
 import numpy as np
+import glob
+import os
+import matplotlib.pyplot as plt
 
 from processing.utils.bfs import remove_small_clusters
+from processing.utils.bfs import label_clusters, extract_cluster
 
+cwd = os.getcwd()
+file_path = os.path.join(cwd, "processing/data/numpy_data/150.npy")
+data = np.load(file_path)
+result = remove_small_clusters(data)
+
+cluster_map, num_clusters = label_clusters(result)
+
+# Extract the 2nd cluster (change the label as needed)
+target_label = 2
+extracted_cluster = extract_cluster(cluster_map, target_label, result)
+
+print("Cluster Map:")
+print(cluster_map)
+plt.imshow(cluster_map)
+plt.axis(False)
+plt.show()
+
+print(f"Extracted Cluster {target_label}:")
+print(extracted_cluster)
+plt.imshow(extracted_cluster)
+plt.axis(False)
+plt.show()
+quit()
 # Example
 import os
 import glob
 import matplotlib.pyplot as plt
-
-"""
-clustered_data = np.zeros((300, 300))
-num_clusters = 50
-
-max_cluster_size = 600
-
-for cluster_id in range(1, num_clusters + 1):
-    cluster_size = np.random.randint(10, max_cluster_size)
-    
-    center_x = np.random.randint(0, 300)
-    center_y = np.random.randint(0, 300)
-
-    for _ in range(cluster_size):
-        forX = np.random.randint(-1, 2)
-        forY = 0
-        if forX == 0:
-            forY = np.random.choice([-1, 1])
-
-        x = center_x + forX
-        y = center_y + forY
-        
-        x = max(0, min(299, x))
-        y = max(0, min(299, y))
-        
-        if clustered_data[x, y] == 0.0:
-            if cluster_size < threshold:
-                clustered_data[x, y] = -1
-            else:
-                clustered_data[x, y] = 1
-        center_x, center_y = x, y
-    """
 
 threshold = 500
 

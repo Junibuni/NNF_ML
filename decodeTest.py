@@ -10,7 +10,7 @@ grid_size = 10
 
 cwd = os.getcwd()
 npy_path = os.path.join(cwd, r"processing\data\numpy_data\150.npy")
-csv_path = os.path.join(cwd, r"processing\data\csv_data\fixed_final.csv")
+csv_path = os.path.join(cwd, r"processing\data\coordinate_data\fixed_final.csv")
 
 depth_array = np.load(npy_path)
 csv_data = ml_lr.decode(grid_size, depth_array)

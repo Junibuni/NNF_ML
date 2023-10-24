@@ -81,7 +81,7 @@ def get_height(filename, grid_size, grid_shape):
     return surface_particle
 
 # Define a function to plot data
-def plot_data(data, rain_rate, **kwargs):
+def plot_data(data, **kwargs):
     color_bar = kwargs.get("color_bar", False)
     color_range = kwargs.get("color_range", None)
     cmap = kwargs.get("cmap", plt.cm.coolwarm)
@@ -107,7 +107,15 @@ def plot_data(data, rain_rate, **kwargs):
     plt.close()
 
 # Define a function to save data to npy files
-def save_to_npy(grid_size, grid_shape, plot=False, num_site=2, **kwargs):
+def save_to_npy(grid_size, grid_shape, plot=False, num_site=2, filepath=None, **kwargs):
+    if filepath:
+        save_file_name = os.path.join(NUMPY_RESULT_PATH, "test")
+        sf = get_height(filepath, grid_size, grid_shape)
+        np.save(save_file_name, sf, allow_pickle=True)
+        print(f"Saved {save_file_name}.npy", end="\n\n")
+        if plot:
+            plot_data(sf, **kwargs)
+        return
     file_lists = glob.glob(os.path.join(DEPTH_DATA_PATH, '*.csv'))
     rainrate_lists = {}
     

@@ -70,3 +70,67 @@ def remove_small_clusters(arr, threshold=150, label_true=None, label_false=None)
                 new_arr[r, c] = 0.0
 
     return new_arr
+
+def label_clusters(input_array):
+    """
+    Label clusters in a 2D NumPy array.
+
+    Args:
+        input_array (numpy.ndarray): The input 2D array containing float values.
+
+    Returns:
+        cluster_map (numpy.ndarray): A labeled cluster map.
+        num_clusters (int): The total number of identified clusters.
+    """
+    def bfs_label(cluster_map, i, j, label):
+        q = deque([(i, j)])
+        while q:
+            x, y = q.popleft()
+            if 0 <= x < rows and 0 <= y < cols and input_array[x, y] != 0 and cluster_map[x, y] == 0:
+                cluster_map[x, y] = label
+                q.extend([(x + dx, y + dy) for dx, dy in directions])
+
+    rows, cols = input_array.shape
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    cluster_map = np.zeros((rows, cols), dtype=int)
+    label = 0
+
+    for i in range(rows):
+        for j in range(cols):
+            if input_array[i, j] != 0 and cluster_map[i, j] == 0:
+                label += 1
+                bfs_label(cluster_map, i, j, label)
+
+    return cluster_map, label
+
+def extract_cluster(cluster_map, target_label, original_array):
+    """
+    Extract a specific labeled cluster from a cluster map.
+
+    Args:
+        cluster_map (numpy.ndarray): The labeled cluster map.
+        target_label (int): The label of the cluster to extract.
+
+    Returns:
+        extracted_cluster (numpy.ndarray): The extracted cluster with 1s representing the target label and 0s elsewhere.
+    """
+    return np.where(cluster_map == target_label, original_array, 0)
+
+# Example usage
+if __name__ == '__main__':
+    input_array = np.array([[0.3, 0.4, 0.0, 0.0, 0.0],
+                            [0.8, 0.9, 0.0, 0.6, 0.7],
+                            [0.0, 0.0, 0.0, 0.5, 0.0],
+                            [0.2, 0.1, 0.0, 0.0, 0.4]])
+
+    cluster_map, num_clusters = label_clusters(input_array)
+
+    # Extract the 2nd cluster (change the label as needed)
+    target_label = 2
+    extracted_cluster = extract_cluster(cluster_map, target_label, input_array)
+
+    print("Cluster Map:")
+    print(cluster_map)
+
+    print(f"Extracted Cluster {target_label}:")
+    print(extracted_cluster)

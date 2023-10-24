@@ -2,6 +2,7 @@ import os
 import glob
 import numpy as np
 import rasterio
+from processing.utils.vars import *
 
 cwd = os.getcwd()
 CHEON_MT_DEM_PATH = os.path.join(cwd, "processing/data/dem.tif")

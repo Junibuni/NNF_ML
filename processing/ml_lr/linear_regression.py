@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from processing.utils.bfs import remove_small_clusters
 
 def flatten(arr):
     """
@@ -76,7 +77,7 @@ class LinearRegressionModel:
 
         # Ensure predictions are non-negative
         y_pred_mod = np.array([max(0, x) for x in y_pred[0]])
-        return revert_flatten(y_pred_mod)
+        return remove_small_clusters(revert_flatten(y_pred_mod))
     
     def score(self, X, y):
         """

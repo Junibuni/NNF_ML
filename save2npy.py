@@ -31,8 +31,9 @@ grid_resolution_Z = int(box_size_Z/grid_size)
 grid_shape = (grid_resolution_X, grid_resolution_Z)
 
 print(f"grid shape: {grid_shape}", end="\n\n")
-
-
+filepath = ["processing\data\depth_data\Part_NNF_000000000_231024103628.csv",""]
+depth.save_to_npy(grid_size, grid_shape, plot=True, filepath=filepath, save_path=r"processing\data\imgs")
+quit()
 depth.save_to_npy(grid_size, grid_shape, plot=False, save_path=r"processing\data\imgs")
 
 """import numpy as np
